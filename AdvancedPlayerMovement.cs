@@ -8,19 +8,27 @@ public class Player : MonoBehaviour
     [HideInInspector] public Rigidbody2D rb;
     [SerializeField] private LayerMask jumpableGround;
 
-    public float Speed;
-
-    public float jumpForce;
-
-
+    
     private float ExelerationTimer;
     private float DecelerationTimer;
 
-
-    [Foldout("curves")] [CurveRange(0, 0, 1, 1)]
+    [Foldout("Movement")]
+    public float Speed;
+    [Foldout("Movement")]
+    public float ExelerationSpeed;
+    [Foldout("Movement")] [CurveRange(0, 0, 1, 1)]
     public AnimationCurve ExelerationCurve;
-    [Foldout("curves")] [CurveRange(0, 0, 1, 1)]
+    [Foldout("Movement")]
+    public float DecelerationSpeed;
+    [Foldout("Movement")] [CurveRange(0, 0, 1, 1)]
     public AnimationCurve DecelerationCurve;
+
+    [Foldout("Jump")]
+    public float jumpForce;
+    [Foldout("Jump")]
+    public float JumpGravity;
+    [Foldout("Jump")]
+    public float FallGravity;
 
 
     [HideInInspector]
@@ -39,6 +47,8 @@ public class Player : MonoBehaviour
     {
         input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
 
+        setJumpGravity();
+
         rb.velocity = new Vector2(Dir.x * Speed * GetExeleration(input.x), rb.velocity.y);
 
         if (Input.GetKeyDown(KeyCode.Z) && IsGrounded())
@@ -55,6 +65,18 @@ public class Player : MonoBehaviour
     }
 
 
+    private void setJumpGravity()
+    {
+        if(rb.velocity.y < -.2f)
+        {
+            rb.gravityScale = FallGravity;
+        }
+        
+        if(IsGrounded())
+        {
+            rb.gravityScale = JumpGravity;
+        }
+    }
 
     private float GetExeleration(float input)
     {
@@ -68,7 +90,7 @@ public class Player : MonoBehaviour
 
             Exeleration = Mathf.Clamp01(ExelerationCurve.Evaluate(ExelerationTimer));
 
-            ExelerationTimer += Time.deltaTime;
+            ExelerationTimer += Time.deltaTime * ExelerationSpeed;
 
             DecelerationTimer = 0;
         }
@@ -79,7 +101,7 @@ public class Player : MonoBehaviour
 
             Exeleration = Mathf.Clamp01(DecelerationCurve.Evaluate(DecelerationTimer));
 
-            DecelerationTimer += Time.deltaTime;
+            DecelerationTimer += Time.deltaTime * DecelerationSpeed;
 
             ExelerationTimer = 0;
         }
